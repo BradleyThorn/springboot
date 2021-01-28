@@ -1,0 +1,1 @@
+INSERT INTO BankUser (username, password, active, role) VALUES ('bradmin', 'bradmin', TRUE, 'Admin')

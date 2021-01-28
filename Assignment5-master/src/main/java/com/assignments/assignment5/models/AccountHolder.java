@@ -2,12 +2,28 @@ package com.assignments.assignment5.models;
 
 import java.util.*;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+@Entity
+@Table(name = "AccountHolder")
 public class AccountHolder {
-
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "accountHolder_id")
 	int id;
+	
 	@NotNull(message = "First Name can not be null")
 	@NotBlank(message = "First Name can not be blank")
 	String firstName;
@@ -18,22 +34,33 @@ public class AccountHolder {
 	@NotNull(message = "SSN can not be null")
 	@NotBlank(message = "SSN can not be blank")
 	String SSN;
-	List<CheckingAccount> checkingAccounts = new ArrayList<CheckingAccount>();
-	List<SavingsAccount> savingsAccounts = new ArrayList<SavingsAccount>();
-	List<CDAccount> cdAccounts = new ArrayList<CDAccount>();
-	int numberOfCheckingAccounts;
+	public int numberOfCheckingAccounts;
 	int checkingBalance;
 	int numberOfSavingsAccounts;
 	int savingsBalance;
 	int numberOfCDAccounts;
 	int cdbalance;
-	double combinedbalance;
+	public double combinedbalance;
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "accountHolder_id", referencedColumnName = "accountHolder_id")
+	AccountHoldersContactDetails AHCD;
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "accountHolder_id", referencedColumnName = "accountHolder_id")
+	BankUser bankUser;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "accountHolder", fetch = FetchType.LAZY)
+	List<CheckingAccount> checkingAccounts = new ArrayList<CheckingAccount>();
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "accountHolder", fetch = FetchType.LAZY)
+	List<SavingsAccount> savingsAccounts = new ArrayList<SavingsAccount>();
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "accountHolder", fetch = FetchType.LAZY)
+	List<CDAccount> cdAccounts = new ArrayList<CDAccount>();
 	
 	
-	static int nextId = 1;
 	
 	public AccountHolder() {
-		this.id = nextId ++;
 		this.firstName = "";
 		this.middleName = "";
 		this.lastName = "";
@@ -47,6 +74,11 @@ public class AccountHolder {
 		this.combinedbalance = 0;
 	}
 	
+	
+	public List<CDAccount> getCdAccounts() {
+		return cdAccounts;
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -91,40 +123,30 @@ public class AccountHolder {
 		return numberOfCheckingAccounts;
 	}
 
-	public void setNumberOfCheckingAccounts(int numberOfCheckingAccounts) {
-		this.numberOfCheckingAccounts = numberOfCheckingAccounts;
-	}
-
 	public int getCheckingBalance() {
-		return checkingBalance;
-	}
-
-	public void setCheckingBalance(int checkingBalance) {
-		this.checkingBalance = checkingBalance;
+		int cb = 0;
+		for(int x = 0; x < checkingAccounts.size(); x++)
+		{
+			cb += checkingAccounts.get(x).getBalance();
+		}
+		return cb;
 	}
 
 	public int getNumberOfSavingsAccounts() {
 		return numberOfSavingsAccounts;
 	}
 
-	public void setNumberOfSavingsAccounts(int numberOfSavingsAccounts) {
-		this.numberOfSavingsAccounts = numberOfSavingsAccounts;
-	}
-
 	public int getSavingsBalance() {
-		return savingsBalance;
-	}
-
-	public void setSavingsBalance(int savingsBalance) {
-		this.savingsBalance = savingsBalance;
+		int cb = 0;
+		for(int x = 0; x < savingsAccounts.size(); x++)
+		{
+			cb += savingsAccounts.get(x).getBalance();
+		}
+		return cb;
 	}
 
 	public int getNumberOfCDAccounts() {
 		return numberOfCDAccounts;
-	}
-
-	public void setNumberOfCDAccounts(int numberOfCDAccounts) {
-		this.numberOfCDAccounts = numberOfCDAccounts;
 	}
 
 	public int getCdbalance() {
@@ -135,13 +157,19 @@ public class AccountHolder {
 		this.cdbalance = cdbalance;
 	}
 
-	public double getCombinedbalance() {
-		return combinedbalance;
+	public double getCombinedBalance() {
+		int cb = 0;
+		for(int x = 0; x < checkingAccounts.size(); x++)
+		{
+			cb += checkingAccounts.get(x).getBalance();
+		}
+		for(int x = 0; x < savingsAccounts.size(); x++)
+		{
+			cb += savingsAccounts.get(x).getBalance();
+		}
+		return cb;
 	}
 
-	public void setCombinedbalance(double combinedbalance) {
-		this.combinedbalance = combinedbalance;
-	}
 	
 	public CheckingAccount addCheckingAccount(CheckingAccount checkingAccount) {
 		checkingAccounts.add(checkingAccount);
@@ -165,6 +193,7 @@ public class AccountHolder {
 	
 	public CDAccount addCDAccount(CDAccount cdAccount){
 		cdAccounts.add(cdAccount);
+		numberOfCDAccounts++;
 		return cdAccount;
 	}
 	
